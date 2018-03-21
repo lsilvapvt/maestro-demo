@@ -1,0 +1,79 @@
+- op: add
+  path: /resources/-
+  value:
+# PIVOTAL-RELEASES-PIVNET+++
+    name: RESOURCE_NAME_GOES_HERE
+    type: pivnet
+    source:
+      api_token: {{pivnet_token}}
+      product_slug: PRODUCTSLUG
+      product_version: PRODUCTVERSION
+      sort_by: semver
+# PIVOTAL-RELEASES-PIVNET---
+# PIVOTAL-RELEASES-S3+++
+    name: RESOURCE_NAME_GOES_HERE
+    type: s3
+    source:
+      bucket: {{s3-bucket}}
+      access_key_id: {{s3-access-key-id}}
+      secret_access_key: {{s3-secret-access-key}}
+      regexp: "RESOURCE_NAME_GOES_HERE/RESOURCE_NAME_GOES_HERE_v{PRODUCTVERSION).pivotal"
+      region_name: {{s3-region-name}}
+      endpoint: {{s3-endpoint}}
+      disable_ssl: {{s3-disable-ssl}}
+      use_v2_signing: {{s3-use-v2-signing}}
+# PIVOTAL-RELEASES-S3---
+
+- op: add
+  path: /jobs/-
+  value:
+    name: upload-and-stage-RESOURCE_NAME_GOES_HERE-tile
+    plan:
+    - aggregate:
+      - get: pivnet-product
+        resource: RESOURCE_NAME_GOES_HERE
+        trigger: true
+        params:
+          globs:
+          - "*pivotal"
+      - get: pcf-pipelines-maestro
+        trigger: false
+        passed:
+          - maestro-timer
+# PCF-PIPELINES-GIT+++
+      - get: pcf-pipelines
+# PCF-PIPELINES-GIT---
+# PCF-PIPELINES-PIVNET+++
+      - get: pcf-pipelines-tarball
+    - task: unpack-tarball
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: busybox
+        inputs:
+        - name: pcf-pipelines-tarball
+        outputs:
+        - name: pcf-pipelines
+        run:
+         path: sh
+         args: ["-c", "tar -xvf pcf-pipelines-tarball/*.tgz"]
+# PCF-PIPELINES-PIVNET---
+    - task: upload-RESOURCE_NAME_GOES_HERE-tile-and-stemcell
+      file: pcf-pipelines/tasks/upload-product-and-stemcell/task.yml
+      params:
+        IAAS: {{iaas_type}}
+        OPSMAN_DOMAIN_OR_IP_ADDRESS: {{opsman_domain_or_ip_address}}
+        OPS_MGR_USR: {{opsman_admin_username}}
+        OPS_MGR_PWD: {{opsman_admin_password}}
+        PIVNET_API_TOKEN: {{pivnet_token}}
+        NO_PROXY: ""
+        OM_IP: ""
+    - task: stage-RESOURCE_NAME_GOES_HERE-tile
+      file: pcf-pipelines/tasks/stage-product/task.yml
+      params:
+        OPSMAN_USERNAME: {{opsman_admin_username}}
+        OPSMAN_PASSWORD: {{opsman_admin_password}}
+        OPSMAN_DOMAIN_OR_IP_ADDRESS: {{opsman_domain_or_ip_address}}
+        PRODUCT_NAME: PRODUCTNAME
