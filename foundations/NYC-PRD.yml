@@ -14,7 +14,7 @@
 # ********************* Ops Manager upgrade *****
 BoM_OpsManager_product_version: ^2\.0\.5$
 # ********************* PCF tiles upgrade *****
-BoM_tile_ERT_product_version: ^2\.0\.4$
+BoM_tile_ERT_product_version: ^2\.0\.6$
 # BoM_tile_SRT_product_version: ^2\.0\..*$
 # BoM_tile_IsolationSegment_product_version: ^2\.0\..*$
 # BoM_tile_PKS_product_version: ^1\.0\..*$
@@ -61,7 +61,7 @@ BoM_tile_ERT_product_version: ^2\.0\.4$
 #
 #   Make `Apply-Changes" a separate and gated job in upgrade pipelines.
 #   Acceptable values: true or false
-gated-Apply-Changes-Job: false
+gated-Apply-Changes-Job: true
 #
 #   Experimental customization (work-in-progress and undergoing tests):
 #   Upgrade pipelines structure/style, either one pipeline per tile/opsmgr or
